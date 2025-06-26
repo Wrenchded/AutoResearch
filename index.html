@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Challenge of Brittle AI in Automotive Safety</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Slate Blue -->
+    <!-- Application Structure Plan: The application is structured as a single-page narrative dashboard, broken into five logical, scrollable sections: The Problem, The Technology, The Challenges, The Solutions, and The Future. A sticky top navigation allows users to jump between these themes non-linearly. This thematic structure was chosen over the report's linear format to improve usability and allow users to explore topics based on interest. Key interactions include clicking on sensor diagrams to reveal details, toggling between challenge visualizations (charts), and expanding solution cards. This encourages exploration and makes the complex information more digestible. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: SAE Levels of Automation -> Goal: Organize -> Viz: Interactive HTML/CSS diagram -> Interaction: Hover to highlight and show details -> Justification: Clearly visualizes the progression of autonomy without complex charts.
+        - Report Info: Sensor Types (Camera, LiDAR, Radar) -> Goal: Compare -> Viz: Interactive HTML/CSS diagram -> Interaction: Click to show details (strengths/weaknesses) -> Justification: A visual and interactive way to compare technologies side-by-side.
+        - Report Info: Environmental Impact on Sensors -> Goal: Compare -> Viz: Radar Chart (Chart.js) -> Interaction: Buttons to switch data -> Justification: Effectively shows the relative performance of different sensors under various conditions.
+        - Report Info: Data Bias -> Goal: Inform -> Viz: Donut Chart (Chart.js) -> Interaction: Static display -> Justification: A simple, universally understood way to represent dataset imbalance.
+        - Report Info: Mitigation Strategies -> Goal: Organize/Inform -> Viz: Interactive Card Grid -> Interaction: Click to expand and reveal details -> Justification: Allows for a high-level overview of solutions while providing depth on demand, preventing information overload.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4; /* Warm neutral background */
+            color: #4A5568;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #3B82F6; /* Accent color */
+            border-bottom-color: #3B82F6;
+        }
+        .section-title {
+            color: #1A202C;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .tab.active {
+            background-color: #3B82F6;
+            color: #FFFFFF;
+        }
+        .solution-card-back {
+            transform: rotateY(180deg);
+        }
+        .solution-card.is-flipped .solution-card-inner {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">AI's Brittleness Problem</h1>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#problem" class="nav-link">The Problem</a>
+                <a href="#tech" class="nav-link">The Technology</a>
+                <a href="#challenges" class="nav-link">The Challenges</a>
+                <a href="#solutions" class="nav-link">The Solutions</a>
+                <a href="#future" class="nav-link">The Future</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                <span class="text-3xl">≡</span>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#problem" class="block py-2 px-6 text-sm hover:bg-gray-200">The Problem</a>
+            <a href="#tech" class="block py-2 px-6 text-sm hover:bg-gray-200">The Technology</a>
+            <a href="#challenges" class="block py-2 px-6 text-sm hover:bg-gray-200">The Challenges</a>
+            <a href="#solutions" class="block py-2 px-6 text-sm hover:bg-gray-200">The Solutions</a>
+            <a href="#future" class="block py-2 px-6 text-sm hover:bg-gray-200">The Future</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+
+        <!-- Hero Section -->
+        <section class="text-center mb-16 md:mb-24">
+            <h2 class="text-4xl md:text-5xl font-bold section-title mb-4">Brittle Perception Systems</h2>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">Exploring the critical challenge of AI fragility in automotive safety, where systems that perform flawlessly in training can fail unexpectedly in the real world.</p>
+        </section>
+
+        <!-- Section 1: The Problem -->
+        <section id="problem" class="mb-16 md:mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold section-title mb-8 text-center">What is Brittleness?</h3>
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <p class="text-lg">At its core, brittleness is an AI's inability to generalize beyond its training data. Instead of learning underlying principles, it memorizes patterns. When faced with even minor, real-world variations—or "edge cases"—its performance can collapse dramatically. This section explores this fundamental vulnerability.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-3">Overfitting vs. Generalization</h4>
+                    <p class="mb-4">An overfitted model is like a student who crams for a test. They memorize specific answers but can't solve new problems. A well-generalized model understands the concepts and can apply them anywhere.</p>
+                    <div class="chart-container" style="height: 250px; max-height: 250px;">
+                        <canvas id="overfittingChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-3">The "Edge Case" Abyss</h4>
+                    <p class="mb-4">Edge cases are individually rare but collectively common scenarios that challenge AI. Click on an example below to see why it's a problem.</p>
+                    <div class="space-y-3">
+                        <button class="edge-case-btn w-full text-left p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition">🚦 Traffic sign obscured by foliage</button>
+                        <button class="edge-case-btn w-full text-left p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition">❄️ Lane markings covered by snow</button>
+                        <button class="edge-case-btn w-full text-left p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition">🦌 Unusual obstacle on road (deer)</button>
+                    </div>
+                    <div id="edge-case-explanation" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md text-blue-800 hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Technology -->
+        <section id="tech" class="mb-16 md:mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold section-title mb-8 text-center">How Autonomous Vehicles Perceive</h3>
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                 <p class="text-lg">AVs "see" the world through a suite of sensors. Each has unique strengths and critical weaknesses. The data from these sensors is then processed by AI and fused together to create a comprehensive model of the environment. This section breaks down the core technologies that form the vehicle's perception stack.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8 items-start">
+                <div class="card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-4 text-center">The Sensor Suite</h4>
+                    <p class="text-center mb-4 text-sm text-gray-500">Click on a sensor to learn more.</p>
+                    <div id="sensor-diagram" class="relative w-full max-w-md mx-auto aspect-square flex items-center justify-center">
+                        <div class="absolute w-48 h-24 bg-gray-700 text-white flex items-center justify-center rounded-md font-bold text-lg">AV</div>
+                        <!-- Sensor Buttons -->
+                        <button data-sensor="camera" class="sensor-btn absolute top-0 left-1/2 -translate-x-1/2 -mt-4 p-2 rounded-full bg-white border-2 border-gray-300 transition">📷</button>
+                        <button data-sensor="lidar" class="sensor-btn absolute top-1/2 -translate-y-1/2 -left-4 p-2 rounded-full bg-white border-2 border-gray-300 transition">📡</button>
+                        <button data-sensor="radar" class="sensor-btn absolute top-1/2 -translate-y-1/2 -right-4 p-2 rounded-full bg-white border-2 border-gray-300 transition">📶</button>
+                        <button data-sensor="ultrasonic" class="sensor-btn absolute bottom-0 left-1/2 -translate-x-1/2 mb-2 p-2 rounded-full bg-white border-2 border-gray-300 transition">🔊</button>
+                    </div>
+                </div>
+                <div id="sensor-info-panel" class="card p-6 rounded-lg">
+                    <h4 id="sensor-name" class="text-2xl font-bold mb-2">Select a sensor</h4>
+                    <p id="sensor-description" class="text-gray-600 mb-4">Click an icon on the diagram to see its details, strengths, and weaknesses.</p>
+                    <div id="sensor-details"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Challenges -->
+        <section id="challenges" class="mb-16 md:mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold section-title mb-8 text-center">Core Challenges of Brittleness</h3>
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                 <p class="text-lg">The fragility of AI perception systems creates several critical challenges that hinder safe deployment. These range from environmental interference and biased data to the threat of malicious attacks designed to fool the system. This interactive dashboard visualizes the key problem areas.</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                <div class="flex justify-center border-b border-gray-200 mb-6">
+                     <button data-tab="environment" class="challenge-tab tab active py-2 px-4 font-semibold text-gray-600 focus:outline-none">Environmental Factors</button>
+                     <button data-tab="bias" class="challenge-tab tab py-2 px-4 font-semibold text-gray-600 focus:outline-none">Data Bias</button>
+                     <button data-tab="attacks" class="challenge-tab tab py-2 px-4 font-semibold text-gray-600 focus:outline-none">Adversarial Attacks</button>
+                </div>
+
+                <!-- Environment Tab -->
+                <div id="environment-content" class="challenge-content">
+                    <h4 class="text-xl font-semibold mb-2 text-center">Sensor Performance in Adverse Conditions</h4>
+                    <p class="text-center text-gray-600 mb-6">Real-world conditions like rain, fog, and darkness can severely degrade sensor performance. This chart compares the effectiveness of different sensors across various environments.</p>
+                    <div class="chart-container">
+                        <canvas id="environmentChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Bias Tab -->
+                <div id="bias-content" class="challenge-content hidden">
+                    <h4 class="text-xl font-semibold mb-2 text-center">The Problem of Data Imbalance</h4>
+                    <p class="text-center text-gray-600 mb-6">AI models are only as good as the data they're trained on. Datasets often over-represent ideal conditions, leaving the AI unprepared for the less common but critical scenarios.</p>
+                    <div class="chart-container" style="height: 300px; max-height: 300px;">
+                        <canvas id="biasChart"></canvas>
+                    </div>
+                     <p class="text-center text-sm text-gray-500 mt-4">This biased model will be an expert in sunny day driving but dangerously naive in snow.</p>
+                </div>
+
+                <!-- Attacks Tab -->
+                <div id="attacks-content" class="challenge-content hidden">
+                     <h4 class="text-xl font-semibold mb-2 text-center">Physical Adversarial Attacks</h4>
+                     <p class="text-center text-gray-600 mb-6">Attackers can make tiny, almost imperceptible physical changes to objects like traffic signs to trick an AI into making catastrophic errors.</p>
+                     <div class="grid md:grid-cols-2 gap-6 text-center">
+                         <div>
+                             <h5 class="font-semibold mb-2">Original Stop Sign</h5>
+                             <div class="w-32 h-32 bg-red-600 text-white text-4xl font-bold flex items-center justify-center rounded-lg mx-auto">STOP</div>
+                             <p class="mt-2 text-sm">AI correctly identifies: <span class="font-mono bg-gray-200 px-2 py-1 rounded">STOP</span></p>
+                         </div>
+                         <div>
+                            <h5 class="font-semibold mb-2">Altered Stop Sign</h5>
+                             <div class="relative w-32 h-32 bg-red-600 text-white text-4xl font-bold flex items-center justify-center rounded-lg mx-auto">
+                                ST<span class="text-black text-xs absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-1"> </span>OP
+                                <div class="absolute top-8 left-8 w-2 h-2 bg-black rounded-full"></div>
+                                <div class="absolute bottom-8 right-8 w-2 h-2 bg-white rounded-full"></div>
+                             </div>
+                             <p class="mt-2 text-sm">AI misinterprets as: <span class="font-mono bg-red-200 px-2 py-1 rounded">Speed Limit 45</span></p>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: The Solutions -->
+        <section id="solutions" class="mb-16 md:mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold section-title mb-8 text-center">Strategies for Building Robust AI</h3>
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <p class="text-lg">Overcoming AI brittleness requires a multi-faceted approach, combining hardware redundancy, smarter data practices, defensive software, and new verification methods. Click on each card to learn more about a key strategy.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Solution Cards will be dynamically inserted here -->
+            </div>
+        </section>
+
+
+        <!-- Section 5: The Future -->
+        <section id="future" class="scroll-mt-20">
+            <h3 class="text-3xl font-bold section-title mb-8 text-center">The Road Ahead</h3>
+             <div class="max-w-4xl mx-auto text-center mb-12">
+                <p class="text-lg">Achieving truly non-brittle AI is a long-term journey. The path forward involves not just technological breakthroughs but also addressing complex societal challenges like regulation, ethics, and public trust. This final section looks at the emerging trends and persistent hurdles.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-4">Key Technology Trends</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-blue-500 font-bold text-xl mr-4 mt-1">→</span>
+                            <div>
+                                <h5 class="font-semibold">Generative AI for Simulation</h5>
+                                <p class="text-sm text-gray-600">Creating millions of realistic, rare edge cases in simulation to train models more effectively and safely than real-world driving alone.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 font-bold text-xl mr-4 mt-1">→</span>
+                            <div>
+                                <h5 class="font-semibold">Edge AI & Real-Time Processing</h5>
+                                <p class="text-sm text-gray-600">Processing data directly on the vehicle to reduce latency, ensuring instantaneous reactions without relying on the cloud.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="text-blue-500 font-bold text-xl mr-4 mt-1">→</span>
+                            <div>
+                                <h5 class="font-semibold">V2X Communication</h5>
+                                <p class="text-sm text-gray-600">Vehicles communicating with each other (V2V) and infrastructure (V2I) to share perception data and anticipate hazards collectively.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                 <div class="card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-4">Long-Term Societal Challenges</h4>
+                    <ul class="space-y-4">
+                       <li class="flex items-start">
+                            <span class="text-red-500 font-bold text-xl mr-4 mt-1">!</span>
+                            <div>
+                                <h5 class="font-semibold">Regulatory & Legal Frameworks</h5>
+                                <p class="text-sm text-gray-600">Laws and policies are struggling to keep pace with technology, creating uncertainty around liability and safety standards.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-500 font-bold text-xl mr-4 mt-1">!</span>
+                            <div>
+                                <h5 class="font-semibold">Ethical Dilemmas</h5>
+                                <p class="text-sm text-gray-600">Programming "trolley problem" scenarios into AI remains a deeply complex and culturally sensitive challenge with no easy answers.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="text-red-500 font-bold text-xl mr-4 mt-1">!</span>
+                            <div>
+                                <h5 class="font-semibold">Public Trust & Acceptance</h5>
+                                <p class="text-sm text-gray-600">High-profile accidents erode public confidence. Building trust requires proven safety, transparency, and clear communication.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-4 text-center text-sm">
+            <p>An interactive summary of the research on Brittle Perception Systems in AI Automotive Safety.</p>
+            <p>&copy; 2024. This application is for educational purposes.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Active Nav Link on Scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            window.onscroll = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            // Section 1: Overfitting Chart
+            const overfittingCtx = document.getElementById('overfittingChart').getContext('2d');
+            new Chart(overfittingCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Simple', 'Moderate', 'Complex', 'Very Complex', 'New Data'],
+                    datasets: [{
+                        label: 'Generalized Model',
+                        data: [85, 90, 92, 88, 87],
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        fill: false,
+                        tension: 0.1
+                    }, {
+                        label: 'Overfitted Model',
+                        data: [86, 95, 99, 99.5, 40],
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        fill: false,
+                        tension: 0.1,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Model Performance vs. Data Complexity' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Accuracy (%)' } }
+                    }
+                }
+            });
+
+            // Section 1: Edge Cases
+            const edgeCaseButtons = document.querySelectorAll('.edge-case-btn');
+            const edgeCaseExplanation = document.getElementById('edge-case-explanation');
+            const edgeCaseData = {
+                '🚦 Traffic sign obscured by foliage': 'A human driver easily infers a stop sign from its shape and context, but an AI relying on clear visual patterns may fail to recognize it, treating it as non-existent.',
+                '❄️ Lane markings covered by snow': 'AI systems trained on clear, visible lane lines can become completely lost when snow or heavy rain obscures them, lacking the human ability to infer the road\'s path.',
+                '🦌 Unusual obstacle on road (deer)': 'While trained to recognize pedestrians and cars, an AI may not have enough data on animals. It might misclassify a deer or fail to predict its erratic movements, leading to a collision.'
+            };
+            edgeCaseButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const key = button.textContent.trim();
+                    edgeCaseExplanation.textContent = edgeCaseData[key];
+                    edgeCaseExplanation.classList.remove('hidden');
+                });
+            });
+
+            // Section 2: Sensor Diagram
+            const sensorButtons = document.querySelectorAll('.sensor-btn');
+            const sensorName = document.getElementById('sensor-name');
+            const sensorDescription = document.getElementById('sensor-description');
+            const sensorDetails = document.getElementById('sensor-details');
+            const sensorData = {
+                camera: {
+                    name: '📷 Camera',
+                    description: 'Captures high-resolution 2D visual data, acting as the primary "eyes" of the vehicle.',
+                    strengths: 'Excellent for object classification (e.g., reading signs, identifying pedestrians), color and texture recognition. Cost-effective.',
+                    weaknesses: 'Poor performance in low light, glare, fog, and rain. Provides no direct depth information.'
+                },
+                lidar: {
+                    name: '📡 LiDAR',
+                    description: 'Light Detection and Ranging. Emits laser pulses to create a precise 3D map of the surroundings.',
+                    strengths: 'Extremely accurate depth perception and spatial resolution. Works well in low-light/darkness. Excellent for object detection and mapping.',
+                    weaknesses: 'Performance degraded by heavy rain, fog, and snow. Significantly more expensive than other sensors.'
+                },
+                radar: {
+                    name: '📶 Radar',
+                    description: 'Radio Detection and Ranging. Emits radio waves to detect objects and measure their velocity.',
+                    strengths: 'Highly robust in adverse weather (rain, fog, snow) and lighting conditions. Excellent for measuring speed and distance of objects.',
+                    weaknesses: 'Lower resolution than LiDAR or cameras, making it harder to classify objects precisely.'
+                },
+                ultrasonic: {
+                    name: '🔊 Ultrasonic',
+                    description: 'Uses sound waves to detect objects at very close range.',
+                    strengths: 'Very cheap and reliable for short-distance detection.',
+                    weaknesses: 'Extremely limited range. Primarily used for low-speed maneuvers like parking.'
+                }
+            };
+            sensorButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const sensorKey = button.dataset.sensor;
+                    const data = sensorData[sensorKey];
+                    
+                    sensorButtons.forEach(btn => btn.classList.remove('ring-2', 'ring-blue-500'));
+                    button.classList.add('ring-2', 'ring-blue-500');
+
+                    sensorName.textContent = data.name;
+                    sensorDescription.textContent = data.description;
+                    sensorDetails.innerHTML = `
+                        <div class="mt-4">
+                            <h5 class="font-semibold text-green-600">Strengths</h5>
+                            <p class="text-sm text-gray-600">${data.strengths}</p>
+                        </div>
+                        <div class="mt-4">
+                            <h5 class="font-semibold text-red-600">Weaknesses</h5>
+                            <p class="text-sm text-gray-600">${data.weaknesses}</p>
+                        </div>
+                    `;
+                });
+            });
+
+            // Section 3: Challenges Tabs and Charts
+            const challengeTabs = document.querySelectorAll('.challenge-tab');
+            const challengeContents = document.querySelectorAll('.challenge-content');
+            let environmentChart, biasChart;
+
+            challengeTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    challengeTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tabName = tab.dataset.tab;
+                    challengeContents.forEach(content => {
+                        if (content.id === `${tabName}-content`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+
+                    if (tabName === 'environment' && !environmentChart) {
+                        createEnvironmentChart();
+                    } else if (tabName === 'bias' && !biasChart) {
+                        createBiasChart();
+                    }
+                });
+            });
+
+            function createEnvironmentChart() {
+                const envCtx = document.getElementById('environmentChart').getContext('2d');
+                environmentChart = new Chart(envCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Clarity', 'Range', 'Weather Resist.', 'Cost-Effectiveness', 'Classification'],
+                        datasets: [{
+                            label: 'Camera',
+                            data: [9, 5, 2, 9, 9],
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)'
+                        }, {
+                            label: 'LiDAR',
+                            data: [8, 8, 4, 2, 7],
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)'
+                        }, {
+                            label: 'Radar',
+                            data: [4, 9, 9, 7, 3],
+                            borderColor: 'rgba(22, 163, 74, 1)',
+                            backgroundColor: 'rgba(22, 163, 74, 0.2)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: false },
+                            tooltip: { enabled: true }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 10,
+                                pointLabels: { font: { size: 12 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createBiasChart() {
+                const biasCtx = document.getElementById('biasChart').getContext('2d');
+                biasChart = new Chart(biasCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Sunny Daytime', 'Night Time', 'Rain / Fog', 'Snow'],
+                        datasets: [{
+                            data: [80, 12, 6, 2],
+                            backgroundColor: ['#60A5FA', '#374151', '#9CA3AF', '#E5E7EB'],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: 'Typical Training Data Distribution' },
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+            createEnvironmentChart();
+
+            // Section 4: Solutions
+            const solutionsContainer = document.querySelector('#solutions .grid');
+            const solutionsData = [
+                { title: 'Advanced Sensor Fusion', icon: '🔄', description: 'Intelligently combining data from multiple sensors (camera, LiDAR, radar) to create a single, more reliable model of the world. The strengths of one sensor compensate for the weaknesses of another.' },
+                { title: 'Data Augmentation', icon: '🖼️', description: 'Artificially increasing training data by creating modified copies of existing data. Techniques include rotation, adding noise, or simulating different weather, forcing the model to generalize better.' },
+                { title: 'Synthetic Data Generation', icon: '🤖', description: 'Using Generative AI to create millions of realistic, simulated driving scenarios, especially rare "edge cases" that are too dangerous or expensive to collect in the real world.' },
+                { title: 'Adversarial Training', icon: '🛡️', description: 'Proactively training AI models with examples that are intentionally designed to fool them. This makes the model more robust and resilient against both digital and physical attacks.' },
+                { title: 'Explainable AI (XAI)', icon: '💡', description: 'Developing models that can explain their decision-making process. This helps developers debug failures and builds public trust by making the AI less of a "black box".' },
+                { title: 'Formal Methods & Verification', icon: '✅', description: 'Using rigorous mathematical techniques to prove that a system adheres to specific safety rules (e.g., "always maintain a 2-second gap"). This provides a higher level of safety assurance than testing alone.' }
+            ];
+
+            solutionsData.forEach(solution => {
+                const cardHTML = `
+                    <div class="solution-card h-48 [perspective:1000px]">
+                        <div class="solution-card-inner relative w-full h-full [transform-style:preserve-3d] transition-transform duration-700">
+                            <!-- Front -->
+                            <div class="card absolute w-full h-full [backface-visibility:hidden] flex flex-col items-center justify-center text-center p-4 rounded-lg cursor-pointer">
+                                <div class="text-4xl mb-2">${solution.icon}</div>
+                                <h5 class="text-lg font-semibold">${solution.title}</h5>
+                                <p class="text-xs text-gray-500 mt-2">Click to learn more</p>
+                            </div>
+                            <!-- Back -->
+                            <div class="card solution-card-back absolute w-full h-full [backface-visibility:hidden] flex flex-col justify-center p-4 rounded-lg cursor-pointer">
+                                <p class="text-sm text-gray-700">${solution.description}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                solutionsContainer.innerHTML += cardHTML;
+            });
+            
+            document.querySelectorAll('.solution-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('is-flipped');
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
